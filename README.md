@@ -1,23 +1,24 @@
 # GPT From Scratch
 
-A minimal GPT (Generative Pre-trained Transformer) implementation from scratch in PyTorch.
+A minimal GPT implementation from scratch in PyTorch — model architecture, BPE tokenizer, training, and inference. Zero HuggingFace dependencies at runtime.
 
 ## Project Structure
 
 | File | Description |
 |---|---|
-| `gpt_model.py` | GPT architecture from scratch (LayerNorm, CausalSelfAttention, MLP, TransformerBlock, GPT) |
-| `convert_weights.py` | Downloads GPT-2 weights from HuggingFace and converts them to our custom model format |
-| `generate.py` | Text generation using our custom GPT model |
-| `run.py` | Run the GPT-2 model interactively |
-| `train.py` | Train a tiny GPT from scratch on a custom dataset |
+| `gpt_model.py` | GPT architecture (LayerNorm, CausalSelfAttention, MLP, TransformerBlock, GPT) |
+| `tokenizer.py` | BPE tokenizer from scratch (GPT-2 style byte-level encoding) |
+| `convert_weights.py` | Downloads GPT-2 weights from HuggingFace and maps into our model |
+| `generate.py` | Text generation using our custom model + tokenizer |
+| `run.py` | Interactive CLI for the GPT-2 model |
+| `train.py` | Train a tiny GPT from scratch on custom data |
 
 ## Usage
 
 ### Run with pretrained GPT-2 weights
 
 ```bash
-# Download weights first
+# Download + convert weights (requires transformers)
 python convert_weights.py gpt2
 
 # Interactive mode
@@ -33,17 +34,19 @@ python run.py "The future of AI is"
 python train.py
 ```
 
-Trains a miniature GPT (4 layers, 4 heads, 128-dim). Loss drops in seconds on GPU. Saves to `trained_tiny_gpt.pt`.
+Trains a miniature GPT (4 layers, 4 heads, 128-dim). Loss drops in seconds on GPU.
 
 ## Architecture
 
-The custom GPT model (`gpt_model.py`) implements:
+All built from scratch, no external ML libraries except PyTorch:
 
-- Token and position embeddings
-- Multi-head causal self-attention
-- Pre-layer normalization (GPT-2 style)
-- GELU activation (tanh approximation)
-- Transformer decoder blocks
-- Output projection with tied embeddings
+- **`gpt_model.py`** — Transformer decoder with multi-head causal self-attention, pre-layer normalization, GELU activation, tied embeddings
+- **`tokenizer.py`** — Byte-Pair Encoding tokenizer with bytes-to-unicode mapping, regex pre-tokenization, and full BPE merge logic
+- **`train.py`** — Full training loop with AdamW optimizer, cross-entropy loss, gradient descent
 
-Defaults match GPT-2 small (124M params): 12 layers, 12 heads, 768 hidden dim.
+Default config matches GPT-2 small (124M params): 12 layers, 12 heads, 768 hidden dim.
+
+## Dependencies
+
+- `torch` — runtime (model, training, inference)
+- `transformers` + `accelerate` — only for weight conversion (`convert_weights.py`)

@@ -28,21 +28,25 @@ def load_model(weights_path="gpt2_weights.pt", device=None):
     return model
 
 
-def encode(prompt):
-    from transformers import GPT2Tokenizer
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-    tokens = tokenizer.encode(prompt, return_tensors="pt")
-    return tokens, tokenizer
+def encode(prompt, tokenizer):
+    tokens = tokenizer.encode(prompt)
+    return torch.tensor([tokens])
 
 
 def decode(tokens, tokenizer):
-    return tokenizer.decode(tokens[0], skip_special_tokens=True)
+    return tokenizer.decode(tokens[0].tolist())
+
+
+def get_tokenizer():
+    from tokenizer import BPETokenizer
+    return BPETokenizer.from_pretrained("gpt2")
 
 
 @torch.no_grad()
 def generate(model, prompt, max_new=100, temperature=0.8, top_k=40):
     device = next(model.parameters()).device
-    input_ids, tokenizer = encode(prompt)
+    tokenizer = get_tokenizer()
+    input_ids = encode(prompt, tokenizer)
     input_ids = input_ids.to(device)
     output = model.generate(input_ids, max_new_tokens=max_new,
                             temperature=temperature, top_k=top_k)
